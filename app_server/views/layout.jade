@@ -1,3 +1,4 @@
+//default layout for most of the other pages
 doctype html
 html
   head
@@ -6,6 +7,27 @@ html
     link(rel='stylesheet', href='/bootstrap/css/amelia.bootstrap.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
-    block content
+    //fixed navigation bar
+    .navbar.navbar-default.navbar-fixed-top
+        .container
+            .navbar-header
+                a.navbar-brand(href='/') Wi-Finder
+                button.navbar-toggle(type='button', data-toggle='collapse', data-target='#navbar-main')
+                    span.icon-bar
+                    span.icon-bar
+                    span.icon-bar
+            #navbar-main.navbar-collapse.collapse
+                ul.nav.navbar-nav
+                    li
+                        a(href='/about/') About
+
+    //main content here
+    .container
+        block content
+
+        footer
+            .row
+                .col-xs-12
+                    small &copy; Victor Li 2017
     script(src='/javascripts/jquery-1.11.1.min.js')
     script(src='/bootstrap/js/bootstrap.min.js')
