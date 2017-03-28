@@ -82,5 +82,8 @@ module.exports.locationInfo = function (req, res) {
 
 // GET 'Add review' page
 module.exports.addReview = function (req, res) {
-    res.render('location-review-form', { title: 'Add review' });
+    res.render('location-review-form', {
+        title: 'Review Starcups on Wi-Finder',
+        pageHeader: {title: 'Review Starcups'}
+    });
   };
