@@ -203,3 +203,59 @@ module.exports.reviewsUpdateOne = function(req, res) {
             }
         });
 };
+
+//deleting a review from a specific location
+//DELETE /api/locations/:locationid/reviews/:reviewid
+module.exports.reviewsDeleteOne = function(req, res) {
+    if(!req.params.locationid || !req.params.reviewid) {
+        sendJSONResponse(res, 404, {
+            "message" : "Not found, locationid and reviewid are both required"
+        });
+        return;
+    }
+
+    //search location from the locationid and then get review from reviewid from location
+    Loc
+        .findById(req.params.locationid)
+        .select('reviews')
+        .exec(function(err, location) {
+            if(!location) {
+                sendJSONResponse(res, 404, {
+                    "message" : "locationid not found"
+                });
+                return;
+            } else if(err) {
+                sendJSONResponse(res, 404, err);
+                return;
+            }
+
+            //there has to be a review
+            if(location.reviews && location.reviews.length > 0) {
+                //if reviewid is not in on the location
+                if(!location.reviews.id(req.params.reviewid)) {
+                    sendJSONResponse(res, 404, {
+                        "message" : "reviewid not found"
+                    });
+                } else {
+                    location.reviews.id(req.params.reviewid).remove(); //remove the subdocument review
+
+                    //when review from location get deleted
+                    location.save(function(err) {
+                        if(err) {
+                            sendJSONResponse(res, 404, err);
+                            return;
+                        } else {
+                            //update the average rating
+                            updateAverageRating(location._id);
+                            sendJSONResponse(res, 204, null);
+                        }
+                    });
+                }
+
+            } else {
+                sendJSONResponse(res, 404, {
+                    "message" : "No review to delete"
+                });
+            }
+        });
+};

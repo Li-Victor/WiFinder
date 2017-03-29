@@ -182,3 +182,26 @@ module.exports.locationsUpdateOne = function(req, res) {
             });
         });
 };
+
+//deleting a document given the id of location
+//DELETE /api/locations/:locationid
+module.exports.locationsDeleteOne = function(req, res) {
+    var locationid = req.params.locationid;
+    if(locationid) {
+        Loc
+            .findByIdAndRemove(locationid)
+            .exec(function(err, location) {
+                if(err) {
+                    sendJSONResponse(res, 404, err);
+                    return;
+                }
+                //success of deleting document
+                sendJSONResponse(res, 204, null);
+
+            });
+    } else {
+        sendJSONResponse(res, 404, {
+            "message" : "No locationid"
+        });
+    }
+};
