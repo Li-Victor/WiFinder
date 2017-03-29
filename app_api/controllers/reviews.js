@@ -17,7 +17,6 @@ module.exports.reviewsReadOne = function(req, res) {
             .select('name reviews')
             .exec(
                 function(err, location) {
-                    var response, review;
                     if(!location) {
                         sendJSONResponse(res, 404, {
                             "message": "locationid not found"
@@ -28,6 +27,7 @@ module.exports.reviewsReadOne = function(req, res) {
                         return;
                     }
 
+                    var response, review;
                     //checks to see that the location has reviews
                     if(location.reviews && location.reviews.length > 0) {
                         //Mongoose get subdocument by using id
@@ -147,4 +147,59 @@ var doSetAverageRating = function(location) {
             else console.log('Average rating updated to', ratingAverage);
         });
     }
+};
+
+
+module.exports.reviewsUpdateOne = function(req, res) {
+    if(!req.params.locationid || !req.params.reviewid) {
+        sendJSONResponse(res, 404, {
+            "message" : "Not found, locationid and reviewid are both required."
+        });
+        return;
+    }
+
+    Loc
+        .findById(req.params.locationid)
+        .select('reviews') //select only the reviews
+        .exec(function(err, location) {
+            if(!location) {
+                sendJSONResponse(res, 404, {
+                    "message" : "locationid not found"
+                });
+                return;
+            } else if(err) {
+                sendJSONResponse(res, 400, err);
+                return;
+            }
+
+            var thisReview;
+            if(location.reviews && location.reviews.length > 0) {
+                //finding subdocument
+                thisReview = location.reviews.id(req.params.reviewid);
+
+                if(!thisReview) {
+                    sendJSONResponse(res, 404, {
+                        "message" : "reviewid not found"
+                    });
+                } else {
+                    //updating review subdocument
+                    thisReview.author = req.body.author;
+                    thisReview.rating = req.body.rating;
+                    thisReview.reviewText = req.body.reviewText;
+
+                    //save the parent document
+                    location.save(function(err, location) {
+                        if(err) sendJSONResponse(res, 404, err);
+                        else {
+                            updateAverageRating(location._id);
+                            sendJSONResponse(res, 200, thisReview);
+                        }
+                    });
+                }
+            } else {
+                sendJSONResponse(res, 404, {
+                    "message" : "No review to update"
+                });
+            }
+        });
 };

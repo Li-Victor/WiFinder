@@ -129,3 +129,56 @@ module.exports.locationsCreate = function(req, res) {
         }
     });
 };
+
+//updating a specific location by its id
+//requires the name, address, facilities, coords, and two openingTimes.
+//openingTimes is with days1, days2, opening1, opening2, closing1, closing2, closed1, closed2
+//PUT /api/locations/:locationid
+module.exports.locationsUpdateOne = function(req, res) {
+    if(!req.params.locationid) {
+        sendJSONResponse(res, 404, {
+            "message" : "Not found, locationid is required."
+        });
+    }
+    Loc
+        //find the document
+        .findById(req.params.locationid)
+        //do not want to select reviews and raing
+        .select('-reviews -rating')
+        .exec(function(err, location) {
+            if(!location) {
+                sendJSONResponse(res, 404, {
+                    "message" : "locationid not found"
+                });
+                return;
+            } else if(err) {
+                sendJSONResponse(res, 400, err);
+                return;
+            }
+            //changing the location information from exec()
+            location.name = req.body.name;
+            location.address = req.body.address;
+            location.facilities = req.body.facilities.split(',');
+            location.coords = [parseFloat(req.body.long), parseFloat(req.body.lat)];
+            location.openingTimes = [{
+                days: req.body.days1,
+                opening: req.body.opening1,
+                closing: req.body.closing1,
+                closed: req.body.closed1
+            }, {
+                days: req.body.days2,
+                opening: req.body.opening2,
+                closing: req.body.closing2,
+                closed: req.body.closed2
+            }];
+
+            //save updated location
+            location.save(function(err, location) {
+                if(err) {
+                    sendJSONResponse(res, 404, err);
+                } else {
+                    sendJSONResponse(res, 200, location);
+                }
+            });
+        });
+};
