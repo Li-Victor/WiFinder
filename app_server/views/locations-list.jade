@@ -11,6 +11,8 @@ block content
                     small &nbsp;#{pageHeader.strapline}
         .row
             .col-xs-12.col-sm-8
+                //message error would be displayed here
+                .error= message
                 .row.list-group
                     each location in locations
                         .col-xs-12.list-group-item

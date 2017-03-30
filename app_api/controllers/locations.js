@@ -35,29 +35,27 @@ module.exports.locationsReadOne = function(req, res) {
 
 };
 
-//getDistanceFromRads converts radians to distance
-//getRadsFromDistance converts distance to radians
-var earth = (function(){
-    var earthRadius = 6371; //km, 3959 miles
-
-    var getDistanceFromRads = function(rads) {
-        return parseFloat(rads * earthRadius);
+// return static conversion method of converying meters to kilometers, or vice versa
+var conversion = (function() {
+    var MetersToKilometers = function(distance) {
+        return parseFloat(distance / 1000);
     };
 
-    var getRadsFromDistance = function(distance) {
-        return parseFloat(distance / earthRadius);
+    var KilometersToMeters = function(distance) {
+        return parseFloat(distance * 1000);
     };
 
     return {
-        getDistanceFromRads: getDistanceFromRads,
-        getRadsFromDistance: getRadsFromDistance
+        MetersToKilometers: MetersToKilometers,
+        KilometersToMeters: KilometersToMeters
     };
-})();
+}());
 
 //getting locations by the latitude and longitude. GET /api/locations/long=?&lat=?
 module.exports.locationsListByDistance = function(req, res) {
     var long = parseFloat(req.query.long);
     var lat = parseFloat(req.query.lat);
+    var maxDistance = parseFloat(req.query.maxDistance);
 
     var point = {
         type: "Point",
@@ -66,36 +64,48 @@ module.exports.locationsListByDistance = function(req, res) {
 
     var geoOptions = {
         spherical: true,
-        maxDistance: earth.getRadsFromDistance(20), //maximum distance of 20km
+        maxDistance: conversion.KilometersToMeters(maxDistance), //maximum distance of 20km
         num: 10
     };
 
     //if long and lat does not exist
-    if(!long || !lat) {
+    if((!long && long !== 0) || (!lat && lat !== 0) || (!maxDistance)) {
         sendJSONResponse(res, 404, {
-            "message" : "long and lat query parameters are required"
+            "message" : "long, lat, and maxDistance query parameters are required"
         });
         return;
     }
 
     Loc.geoNear(point, geoOptions, function(err, results, stats) {
-        var locations = []; //results are in location
+        var locations; //results are in location
+        console.log('Geo Results',results);
+        console.log('Geo stats',stats);
         if(err) {
             sendJSONResponse(res, 404, err);
+            return;
         } else {
-            results.forEach(function(doc) {
-                locations.push({
-                    distance: earth.getDistanceFromRads(doc.dis),
-                    name: doc.obj.name,
-                    address: doc.obj.address,
-                    rating: doc.obj.rating,
-                    facilities: doc.obj.facilities,
-                    _id: doc.obj._id
-                });
-            });
+
+            locations = buildLocationList(req, res, results, stats);
             sendJSONResponse(res, 200, locations);
         }
     });
+};
+
+//FROM locationsListByDistance
+//return an array of distance
+var buildLocationList = function(req, res, results, stats) {
+    var locations = [];
+    results.forEach(function(doc) {
+        locations.push({
+            distance: conversion.MetersToKilometers(doc.dis),
+            name: doc.obj.name,
+            address: doc.obj.address,
+            rating: doc.obj.rating,
+            facilities: doc.obj.facilities,
+            _id: doc.obj._id
+        });
+    });
+    return locations;
 };
 
 
