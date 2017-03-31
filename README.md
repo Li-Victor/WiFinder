@@ -16,3 +16,4 @@ Libraries that went into making this website
 Other tools that helped
 - Heroku
 - MLab
+- Google Static Maps API

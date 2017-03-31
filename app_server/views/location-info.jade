@@ -6,7 +6,7 @@ block content
     .row.page-header
         .col-lg-12
             //page header
-            h1 Starcups
+            h1= pageHeader.title
     .row
         .col-xs-12.col-md-9
             .row
@@ -42,7 +42,7 @@ block content
                             h2.panel-title Location map
                         //static Google maps image
                         .panel-body
-                            img.img-responsive.img-rounded(src='http://maps.googleapis.com/maps/api/staticmap?center=#{location.coords.lat},#{location.coords.long}&zoom=17&size=400x350&sensor=false&markers=#{location.coords.lat},#{location.coords.long}&scale=2')
+                            img.img-responsive.img-rounded(src='https://maps.googleapis.com/maps/api/staticmap?center=#{location.coords.lat},#{location.coords.long}&zoom=17&size=400x350&sensor=false&markers=#{location.coords.lat},#{location.coords.long}&scale=2&key=AIzaSyDZSYxEUQY3sff-Bd75paUVQzGhjmtkTN0')
             .row
                 .col-xs-12
                     .panel.panel-primary.review-panel
@@ -59,10 +59,11 @@ block content
                                             span.rating
                                                 +outputRating(review.rating)
                                             span.reviewAuthor #{review.author}
-                                            small.reviewTimestamp #{review.timestamp}
+                                            small.reviewTimestamp
+                                                +formatDate(review.createdOn)
                                         .col-xs-12
                                             //replaces the line breaks for each text for each review to a <br/ > tag
                                             p !{(review.reviewText).replace(/\n/g, '<br/ >')}
         .col-xs-12.col-md-3
-            p.lead Starcups is on Wi-Finder because it has accessible wifi and space to sit down with your laptop and get some done.
-            p If you've been and you like it - or if you don't - please leave a review to help other people just like you.
+            p.lead= sidebar.context
+            p= sidebar.callToAction
