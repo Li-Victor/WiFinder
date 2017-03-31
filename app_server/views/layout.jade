@@ -1,6 +1,6 @@
 //default layout for most of the other pages
 doctype html
-html
+html(ng-app='WiFinderApp')
   head
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     title= title
@@ -29,6 +29,9 @@ html
             .row
                 .col-xs-12
                     small &copy; Victor Li 2017
+    script(src='/angular/angular.min.js')
+    script(src='/angular/js/app.js')
+    script(src='/angular/js/locationListCtrl.js')
     script(src='/javascripts/jquery-1.11.1.min.js')
     script(src='/bootstrap/js/bootstrap.min.js')
     script(src='/javascripts/validation.js')
