@@ -22,3 +22,7 @@ a.btn.btn-default.pull-right {
     padding-top: 0;
     padding-bottom: 0;
 }
+
+#filter {
+    margin-left: 4px;
+}

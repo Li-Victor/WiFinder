@@ -11,18 +11,25 @@ block content
                     small &nbsp;#{pageHeader.strapline}
         .row
             .col-xs-12.col-sm-8(ng-controller="locationListCtrl")
+                label(for="filter") Filter results
+                //Filters the results shown
+                input#filter(type="text", name="filter", ng-model="textFilter")
                 //message error would be displayed here
                 .error {{ message }}
                 .row.list-group
-                    .col-xs-12.list-group-item(ng-repeat="location in data.locations")
+                    //repeat for every location, filters the entire location by the textFilter.
+                    //textFilter is in the ng-model on top
+                    .col-xs-12.list-group-item(ng-repeat="location in data.locations | filter : textFilter")
                         h4
                             a(href="/location/{{ location._id }}")  {{ location.name }}
-                            small {{ location.rating }}
-                            span.badge.pull-right.badge-default {{ location.distance }}
+                            //directive for show the rating stars
+                            small(rating-stars, rating="location.rating")
+                            span.badge.pull-right.badge-default {{ location.distance | formatDistance }}
                         //info about place
                         p.address {{ location.address }}
                         p
-                            span.label.label-warning.label-facility(ng-repeat="facility in facilities")
-                            | {{ facility }}
+                            //repeat for every facility in that location
+                            span.label.label-warning.label-facility(ng-repeat="facility in location.facilities")
+                                |  {{ facility }}
             .col-xs-12.col-sm-4
                 p.lead= sidebar
