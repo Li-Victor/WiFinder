@@ -9,7 +9,12 @@ var ctrlOthers = require('../controllers/others');
 router.get('/', ctrlLocations.homelist);
 //locationid as param
 router.get('/location/:locationid', ctrlLocations.locationInfo);
-router.get('/location/review/new', ctrlLocations.addReview);
+
+//gooes to view of adding a new review
+router.get('/location/:locationid/review/new', ctrlLocations.addReview);
+
+// post method to add a new review to a location, given locationid
+router.post('/location/:locationid/review/new', ctrlLocations.doAddReview);
 
 // Other pages from Others controller
 router.get('/about', ctrlOthers.about);

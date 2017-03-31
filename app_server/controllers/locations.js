@@ -87,7 +87,18 @@ var _formatDistance = function(distance) {
 };
 
 // GET 'Location info' page
+//renders a specific location via getLocationInfo
 module.exports.locationInfo = function (req, res) {
+    //responseData is the location object
+    getLocationInfo(req, res, function(req, res, responseData) {
+        renderDetailPage(req, res, responseData);
+    });
+
+};
+
+//module.exports.locationInfo and module.exports.addReview calls,
+//this calls api to find specific location from locationid, and has a callback
+var getLocationInfo = function(req, res, callback) {
     //call get method to api from the location id
     var path = '/api/locations/' + req.params.locationid;
 
@@ -108,13 +119,12 @@ module.exports.locationInfo = function (req, res) {
                 long: body.coords[0],
                 lat: body.coords[1]
             };
-            renderDetailPage(req, res, data);
+            callback(req, res, data);
         } else { //shows error page
             _showError(req, res, response.statusCode);
         }
 
     });
-
 };
 
 //this function is called from locatoininfo
@@ -158,8 +168,53 @@ var renderDetailPage = function(req, res, locationDetail) {
 
 // GET 'Add review' page
 module.exports.addReview = function (req, res) {
-    res.render('location-review-form', {
-        title: 'Review Starcups on Wi-Finder',
-        pageHeader: {title: 'Review Starcups'}
+    getLocationInfo(req, res, function(req, res, response) {
+        renderReviewForm(req, res, response);
     });
-  };
+};
+
+var renderReviewForm = function(req, res, locationDetail) {
+    res.render('location-review-form', {
+        title: 'Review ' + locationDetail.name + ' on WiFinder',
+        pageHeader: {title: 'Review ' + locationDetail.name},
+        error: req.query.err
+    });
+};
+
+//POST 'Add review'
+module.exports.doAddReview = function(req, res) {
+    var locationid = req.params.locationid;
+    var path = '/api/locations/' + locationid + '/reviews';
+
+    //JSON post data
+    var postData = {
+        author: req.body.name,
+        rating: parseInt(req.body.rating, 10),
+        reviewText: req.body.review
+    };
+
+    var requestOptions = {
+        url: apiOptions.server + path,
+        method: 'POST',
+        json: postData
+    };
+
+    //if any of the author, rating, and reivewText is falsey, like when one field is empty when POSt
+    //immediately redirect to review form with error, instead of trying to hit an api
+    if(!postData.author || !postData.rating || !postData.reviewText) {
+        res.redirect('/location/' + locationid + '/review/new?err=val');
+    } else {
+        //make API request
+        request(requestOptions, function(err, response, body) {
+            if(response.statusCode === 201) { //if successfully POST, redirect to the location info page
+                res.redirect('/location/' + locationid);
+            } else if(response.statusCode === 400 && body.name && body.name === 'ValidationError') { //server side checking with mongoose
+                res.redirect('/location/' + locationid + '/review/new?err=val'); //redirects to a review form, passing an error flag in query string
+            } else {
+                _showError(req, res, response.statusCode);
+            }
+        });
+    }
+
+
+};

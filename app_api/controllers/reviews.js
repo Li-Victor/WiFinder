@@ -103,6 +103,7 @@ var doAddReview = function(req, res, location) {
         location.save(function(err, location) { //callback before saving the location
             var thisReview;
             if(err) {
+                console.log(err);
                 sendJSONResponse(res, 400, err);
             } else {
                 updateAverageRating(location._id); //updating the average rating of the location
